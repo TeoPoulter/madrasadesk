@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://madrasadesk.co.uk/sitemap.xml
