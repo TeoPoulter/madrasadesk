@@ -45,3 +45,7 @@ if(form){
  form.noValidate=true;form.classList.add('enquiry-enhanced');form.querySelector('.enquiry-progress').hidden=false;form.querySelector('.enquiry-controls').hidden=false;showStep(false);
  const plan=new URLSearchParams(location.search).get('plan');if(['Teacher','Madrasa','Tailored'].includes(plan))form.querySelector('[name=package]').value=plan;
 }
+
+// Small, genuine brand controls lead into the complete portal designer.
+const brandName=document.querySelector('#brand-preview-name'),brandColour=document.querySelector('#brand-preview-colour'),brandLayout=document.querySelector('#brand-preview-layout'),brandCard=document.querySelector('.identity-card');
+if(brandName){brandName.addEventListener('input',()=>{document.querySelector('#identity-name').textContent=brandName.value.trim()||'Your madrasa';document.querySelector('.identity-mark').textContent=(brandName.value.trim()||'M').slice(0,1).toUpperCase()});brandColour.addEventListener('input',()=>{brandCard.style.setProperty('--accent',brandColour.value);document.querySelectorAll('[data-colour]').forEach(b=>{b.classList.remove('active');b.setAttribute('aria-pressed','false')})});brandLayout.addEventListener('change',()=>brandCard.dataset.layout=brandLayout.value);document.querySelectorAll('[data-colour]').forEach(b=>b.addEventListener('click',()=>{brandColour.value={blue:'#416aa0',green:'#34735f',purple:'#765aa3'}[b.dataset.colour]}));}
