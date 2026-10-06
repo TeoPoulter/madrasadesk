@@ -18,7 +18,17 @@ if(form){const started=Date.now();const key=crypto.randomUUID();form.addEventLis
  const body=document.createElement('p');body.textContent='Thank you for getting in touch. We’ve received your enquiry and will contact you to arrange a personal walkthrough.';
  const ref=document.createElement('p');ref.className='receipt';ref.textContent='Your reference: '+result.reference;
  success.append(icon,title,body,ref);form.replaceChildren(success);success.focus();
- }catch(err){status.className='error';status.textContent=err.message==='Failed to fetch'?'We couldn’t connect. Your answers are still here. Please try again, or email teojop@outlook.com.':err.message;button.disabled=false;button.textContent='Request a demo ↗';status.focus();}
+ }catch(err){status.className='error';status.textContent=err.message==='Failed to fetch'?'We couldn’t connect. Your answers are still here. Please try again, or email hello@madrasadesk.co.uk.':err.message;button.disabled=false;button.textContent='Request a demo ↗';status.focus();}
 })}
 
 document.querySelectorAll('[data-plan]').forEach(link=>link.addEventListener('click',()=>{const choice=document.querySelector('select[name=package]');if(choice)choice.value=link.dataset.plan;}));
+
+// Motion enhances the page; content remains available without it.
+const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)');
+if(!reduceMotion.matches && 'IntersectionObserver' in window){
+ const reveal=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('is-visible');reveal.unobserve(e.target)}}),{threshold:.12});
+ document.querySelectorAll('[data-reveal]').forEach(el=>{el.classList.add('reveal-ready');reveal.observe(el)});
+ const stage=document.querySelector('[data-depth]');
+ if(stage){let queued=false;const update=()=>{const y=stage.getBoundingClientRect().top;stage.style.setProperty('--tilt',Math.max(0,Math.min(7,y/100))+'deg');queued=false};addEventListener('scroll',()=>{if(!queued){queued=true;requestAnimationFrame(update)}},{passive:true});update()}
+}
+document.querySelectorAll('[data-colour]').forEach(button=>button.addEventListener('click',()=>{const colors={blue:'#416aa0',green:'#34735f',purple:'#765aa3'};document.querySelector('.identity-card').style.setProperty('--accent',colors[button.dataset.colour]);document.querySelectorAll('[data-colour]').forEach(b=>{b.classList.toggle('active',b===button);b.setAttribute('aria-pressed',String(b===button))})}));
