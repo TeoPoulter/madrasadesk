@@ -17,7 +17,11 @@ if(form){const started=Date.now();const key=crypto.randomUUID();form.addEventLis
  const title=document.createElement('h3');title.textContent='JazakAllah khair.';
  const body=document.createElement('p');body.textContent='We’ve received your enquiry and will contact you to arrange a personal walkthrough.';
  const ref=document.createElement('p');ref.className='receipt';ref.textContent='Your reference: '+result.reference;
- success.append(icon,title,body,ref);form.replaceChildren(success);success.focus();
+ success.append(icon,title,body,ref);
+ const previousHeight=form.getBoundingClientRect().height;form.style.minHeight=previousHeight+'px';
+ if(!matchMedia('(prefers-reduced-motion: reduce)').matches)await form.animate([{opacity:1},{opacity:0}],{duration:160,easing:'ease-out'}).finished;
+ form.replaceChildren(success);success.focus({preventScroll:true});
+ if(!matchMedia('(prefers-reduced-motion: reduce)').matches)success.animate([{opacity:0,transform:'translateY(12px)'},{opacity:1,transform:'none'}],{duration:420,easing:'cubic-bezier(.2,.8,.2,1)'});
  }catch(err){status.className='error';status.textContent=err.message==='Failed to fetch'?'We couldn’t connect. Your answers are still here. Please try again, or email hello@madrasadesk.co.uk.':err.message;button.disabled=false;button.textContent='Request a demo ↗';status.focus();}
 })}
 
@@ -38,7 +42,14 @@ if(form){
  const steps=[...form.querySelectorAll('.enquiry-step')],back=form.querySelector('#enquiry-back'),next=form.querySelector('#enquiry-next'),submit=form.querySelector('[type=submit]');let step=0;
  const labels=['You','Your teaching','Your priorities','Contact'];
  function validCurrent(){return [...steps[step].querySelectorAll('input,textarea,select')].every(el=>el.reportValidity())}
- function showStep(focus=true){steps.forEach((el,i)=>el.hidden=i!==step);back.disabled=step===0;next.hidden=step===3;submit.hidden=step!==3;form.querySelector('#enquiry-step-label').textContent=(step+1)+' of 4 · '+labels[step];const track=form.querySelector('.enquiry-track');track.setAttribute('aria-valuenow',step+1);track.firstElementChild.style.width=((step+1)*25)+'%';if(step===3){const v=new FormData(form);form.querySelector('#enquiry-review').textContent=[v.get('name'),v.get('organisation'),v.get('size')+' students',v.get('package')].join(' · ')}if(focus){steps[step].querySelector('h4').focus({preventScroll:true});if(form.getBoundingClientRect().top<90)form.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'})}}
+ function showStep(focus=true){
+  steps.forEach((el,i)=>el.hidden=i!==step);back.disabled=step===0;next.hidden=step===3;submit.hidden=step!==3;
+  form.querySelector('#enquiry-step-label').textContent=(step+1)+' of 4 · '+labels[step];const track=form.querySelector('.enquiry-track');track.setAttribute('aria-valuenow',step+1);track.firstElementChild.style.width=((step+1)*25)+'%';
+  if(focus){steps[step].querySelector('h4').focus({preventScroll:true});if(!matchMedia('(prefers-reduced-motion: reduce)').matches)steps[step].animate([{opacity:0,transform:'translateX(10px)'},{opacity:1,transform:'none'}],{duration:360,easing:'cubic-bezier(.2,.8,.2,1)'});}
+ }
+ function sizeSteps(){form.style.setProperty('--step-height','0px');const heights=steps.map(el=>{const hidden=el.hidden;el.hidden=false;const height=el.scrollHeight;el.hidden=hidden;return height});form.style.setProperty('--step-height',(Math.ceil(Math.max(...heights))+2)+'px');}
+ sizeSteps();addEventListener('resize',sizeSteps);document.fonts?.ready.then(sizeSteps);
+
  form._showInvalidStep=()=>{const invalid=steps.findIndex(el=>[...el.querySelectorAll('input,textarea,select')].some(f=>!f.checkValidity()));if(invalid>=0){step=invalid;showStep()}};
  back.onclick=()=>{if(step>0){step--;showStep()}};next.onclick=()=>{if(validCurrent()){step++;showStep()}};
  form.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.tagName==='INPUT'&&step<3){e.preventDefault();next.click()}});
@@ -49,3 +60,17 @@ if(form){
 // Small, genuine brand controls lead into the complete portal designer.
 const brandName=document.querySelector('#brand-preview-name'),brandColour=document.querySelector('#brand-preview-colour'),brandLayout=document.querySelector('#brand-preview-layout'),brandCard=document.querySelector('.identity-card');
 if(brandName){brandName.addEventListener('input',()=>{document.querySelector('#identity-name').textContent=brandName.value.trim()||'Your madrasa';document.querySelector('.identity-mark').textContent=(brandName.value.trim()||'M').slice(0,1).toUpperCase()});brandColour.addEventListener('input',()=>{brandCard.style.setProperty('--accent',brandColour.value);document.querySelectorAll('[data-colour]').forEach(b=>{b.classList.remove('active');b.setAttribute('aria-pressed','false')})});brandLayout.addEventListener('change',()=>brandCard.dataset.layout=brandLayout.value);document.querySelectorAll('[data-colour]').forEach(b=>b.addEventListener('click',()=>{brandColour.value={blue:'#416aa0',green:'#34735f',purple:'#765aa3'}[b.dataset.colour]}));}
+
+// Keep native disclosure semantics while animating both opening and closing.
+document.querySelectorAll('#questions details').forEach(details=>{
+ const summary=details.querySelector('summary');let animation=null,targetOpen=details.open;
+ summary.addEventListener('click',event=>{
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  event.preventDefault();const from=details.getBoundingClientRect().height;targetOpen=!targetOpen;
+  if(animation){animation.onfinish=null;animation.cancel();}
+  details.style.height='';details.style.overflow='hidden';details.open=targetOpen;
+  const to=details.getBoundingClientRect().height;details.open=true;
+  animation=details.animate([{height:from+'px'},{height:to+'px'}],{duration:320,easing:'cubic-bezier(.2,.8,.2,1)'});
+  animation.onfinish=()=>{details.open=targetOpen;details.style.height='';details.style.overflow='';animation=null;};
+ });
+});
